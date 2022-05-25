@@ -2,9 +2,11 @@ from spyne import Application, rpc, ServiceBase, Iterable, Unicode, String, AnyX
 
 from spyne.protocol.soap import Soap11
 from spyne.server.wsgi import WsgiApplication
+from spyne.util.wsgi_wrapper import WsgiMounter
 
 
 from googletrans import Translator
+
 
 class googleTranslateService(ServiceBase):
     @rpc(String, String, String, _returns=String)
@@ -14,11 +16,26 @@ class googleTranslateService(ServiceBase):
         return result.text
 
 
-application = Application([googleTranslateService], 'google.translate.soap',
-                          in_protocol=Soap11(validator='lxml'),
-                          out_protocol=Soap11())
+class googleLanguageDetectService(ServiceBase):
+    @rpc(String, _returns=String)
+    def detect_text(ctx, text):
+        translator = Translator()
+        result = translator.detect(text)
+        return result.lang
 
-wsgi_application = WsgiApplication(application)
+
+application1 = Application([googleTranslateService], 'google.translate.soap',
+                           in_protocol=Soap11(validator='lxml'),
+                           out_protocol=Soap11())
+
+application2 = Application([googleLanguageDetectService], 'google.translate.soap',
+                           in_protocol=Soap11(validator='lxml'),
+                           out_protocol=Soap11())
+
+wsgi_application = WsgiMounter({
+    'app1': application1,
+    'app2': application2,
+})
 
 
 if __name__ == '__main__':
