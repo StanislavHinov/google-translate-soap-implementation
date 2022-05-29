@@ -3,5 +3,4 @@
 
 # Dependencies
 - python - 3.10.4
-- pip install googletrans==3.1.0a0 - specific version is required 
-- pip install spyne
+- pip install spyne requests
